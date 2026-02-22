@@ -256,6 +256,24 @@ jobs:
             !app/src-tauri/target/release/bundle/**/*.dSYM/**
           retention-days: 7
 
+      # Flatpak build only on Linux leg
+      - name: Build Flatpak bundle
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak-builder
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+          flatpak/build-flatpak.sh
+
+      - name: Upload Flatpak artifact
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: com.blinko.app.flatpak
+          path: com.blinko.app.flatpak
+          retention-days: 5
+
   # Android Platform Build Task
   publish-android:
     needs: [set-version, update-version]
