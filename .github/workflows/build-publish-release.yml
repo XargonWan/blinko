@@ -300,3 +300,36 @@ jobs:
           echo "::warning::Failed to trigger app release workflow. This might be due to permission issues."
           echo "::warning::Please ensure the GITHUB_TOKEN has 'workflow' permission enabled in repository settings."
           echo "::warning::Alternatively, you can manually trigger the app-release workflow with version: ${{ env.VERSION }}"
+
+  flatpak:
+    name: Build Flatpak bundle
+    needs: update-version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak-builder
+          
+
+      - name: Build Flatpak
+        run: |
+          # ensure remotes available in runner too (script also does it)
+          flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+          flatpak/build-flatpak.sh
+
+      - name: Upload Flatpak artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blinko.flatpak
+          path: blinko.flatpak
+          retention-days: 5

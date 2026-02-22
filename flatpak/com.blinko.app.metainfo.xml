@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>com.blinko.app</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Blinko</name>
+  <summary>AI‑powered note‑taking client backed by your own server</summary>
+  <description>
+    <p>Blinko is an AI‑powered card note-taking project designed to let you quickly capture
+    and organize your fleeting thoughts. The desktop client is built with Tauri and talks
+    to a self-hosted backend. Features include natural-language search, Markdown support,
+    and full offline data ownership.</p>
+  </description>
+  <project_license>GPL-3.0-or-later</project_license>
+  <url type="homepage">https://blinko.space/</url>
+  <url type="documentation">https://docs.blinko.space/</url>
+  <url type="repository">https://github.com/blinkospace/blinko</url>
+  <icon>blinko</icon>
+</component>

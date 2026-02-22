@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Blinko
+Comment=AI-powered note taking client
+Exec=blinko
+Icon=blinko
+Terminal=false
+Type=Application
+Categories=Utility;Office;
+StartupNotify=true

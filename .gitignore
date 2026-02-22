@@ -33,3 +33,9 @@ dev-dist
 .claude/settings.local.json
 target
 server/public
+
+# flatpak build artifacts
+build-dir
+com.blinko.app.flatpak
+dist-public.tar.gz
+.flatpak-builder
