@@ -113,6 +113,73 @@ jobs:
           name: tauri-config
           path: app/src-tauri/tauri.conf.json
 
+  # build common linux bundle once
+  linux-bundle:
+    needs: [set-version, update-version]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.2.8
+
+      - name: Install Dependencies
+        run: |
+          cd app
+          bun install --frozen-lockfile
+
+      - name: Build frontend
+        run: |
+          cd app
+          bun run build:no-pwa
+
+      - name: Build Linux bundle
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: 'app'
+          beforeBuildCommand: ''
+          tauriScript: 'bun run tauri'
+          args: ''
+          tagName: ${{ needs.set-version.outputs.version }}
+
+      - name: Upload linux bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-bundle
+          path: app/src-tauri/target/release/bundle/linux-unpacked
+
+  # linux packaging variants run in parallel after bundle created
+  linux-package:
+    needs: linux-bundle
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        variant: [cpu,cuda]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download linux bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-bundle
+          path: bundle
+
+      - name: Package variant
+        run: |
+          echo "Packaging variant ${{ matrix.variant }}"
+          # (insert variant-specific packaging commands here)
+
   # Desktop Platform Build Task
   publish-desktop:
     needs: [set-version, update-version]
@@ -125,8 +192,6 @@ jobs:
         include:
           - platform: 'macos-latest' # Apple Silicon (M-series chip)
             args: '--target aarch64-apple-darwin'
-          - platform: 'ubuntu-22.04' # Linux Platform
-            args: ''
           - platform: 'windows-latest' # Windows Platform
             args: ''
 
@@ -236,6 +301,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: 'app'
+          beforeBuildCommand: ''
           tauriScript: 'bun run tauri'
           args: ${{ matrix.args }}
           tagName: ${{ github.event.inputs.is-test == 'true' && '' || needs.set-version.outputs.version }}
